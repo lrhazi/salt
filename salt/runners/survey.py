@@ -14,6 +14,40 @@ when identifying discrepancies in a large infrastructure managed by salt.
 
 import salt.client
 
+def summary(*args, **kwargs):
+    '''
+    Return a summary of the unique results of the given salt command
+
+    This command is submitted via a salt runner using the
+    general form:
+
+        salt-run survey.summary [survey_sort=up/down] <target>
+                  <salt-execution-module> <salt-execution-module parameters>
+
+    Optionally accept a "survey_sort=" parameter. Default: "survey_sort=down"
+
+    CLI Example #1: ( functionally equivalent to "salt-run manage.up" )
+
+    .. code-block:: bash
+
+
+        salt-run survey.summary "*" test.ping
+
+    CLI Example #2: ( find an "outlier" minion config file )
+
+    .. code-block:: bash
+
+        salt-run survey.summary "*" file.get_hash /etc/salt/minion survey_sort=up
+    '''
+
+    bulk_ret = _get_pool_results(*args, **kwargs)
+    total_minions = 0
+    for k in bulk_ret:
+        total_minions += len(k['pool'])
+        print("%d minions:\n%s\n\n"%(len(k['pool']),str(k['result'])))
+    print("Total minions: %d" % total_minions)
+    return bulk_ret
+
 
 def hash(*args, **kwargs):
     '''
